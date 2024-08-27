@@ -28,11 +28,11 @@ def get_api_for_autocomplete_company_name():
         return Response(
             json.dumps(
                 {
-                    "message": AutocompleteCompanyNamePort.Status.value[1],
+                    "message": AutocompleteCompanyNamePort.Status.INVALID_REQUEST[1],
                     "data": None,
                 }
             ),
-            status=AutocompleteCompanyNamePort.Status.value[0],
+            status=AutocompleteCompanyNamePort.Status.INVALID_REQUEST[0],
             mimetype="application/json",
         )
     else:
@@ -64,11 +64,11 @@ def get_api_for_search_company_by_name(name: str):
         return Response(
             json.dumps(
                 {
-                    "message": SearchCompanyByNamePort.Status.value[1],
+                    "message": SearchCompanyByNamePort.Status.INVALID_REQUEST[1],
                     "data": None,
                 }
             ),
-            status=SearchCompanyByNamePort.Status.value[0],
+            status=SearchCompanyByNamePort.Status.INVALID_REQUEST[0],
             mimetype="application/json",
         )
     else:
@@ -96,11 +96,11 @@ def get_api_for_search_companies_by_tag():
         return Response(
             json.dumps(
                 {
-                    "message": SearchCompaniesByTagPort.Status.value[1],
+                    "message": SearchCompaniesByTagPort.Status.INVALID_REQUEST[1],
                     "data": None,
                 }
             ),
-            status=SearchCompaniesByTagPort.Status.value[0],
+            status=SearchCompaniesByTagPort.Status.INVALID_REQUEST[0],
             mimetype="application/json",
         )
     else:
@@ -130,11 +130,11 @@ def post_api_for_add_new_company():
         return Response(
             json.dumps(
                 {
-                    "message": AddNewCompanyPort.Status.value[1],
+                    "message": AddNewCompanyPort.Status.INVALID_REQUEST[1],
                     "data": None,
                 }
             ),
-            status=AddNewCompanyPort.Status.value[0],
+            status=AddNewCompanyPort.Status.INVALID_REQUEST[0],
             mimetype="application/json",
         )
     else:
@@ -162,11 +162,11 @@ def put_api_for_add_company_tag(name: str):
         return Response(
             json.dumps(
                 {
-                    "message": AddCompanyTagPort.Status.value[1],
+                    "message": AddCompanyTagPort.Status.INVALID_REQUEST[1],
                     "data": None,
                 }
             ),
-            status=AddCompanyTagPort.Status.value[0],
+            status=AddCompanyTagPort.Status.INVALID_REQUEST[0],
             mimetype="application/json",
         )
     else:
@@ -195,11 +195,11 @@ def delete_api_for_delete_company_tag(name: str, tag: str):
         return Response(
             json.dumps(
                 {
-                    "message": DeleteCompanyTagPort.Status.value[1],
+                    "message": DeleteCompanyTagPort.Status.INVALID_REQUEST[1],
                     "data": None,
                 }
             ),
-            status=DeleteCompanyTagPort.Status.value[0],
+            status=DeleteCompanyTagPort.Status.INVALID_REQUEST[0],
             mimetype="application/json",
         )
     else:
