@@ -42,6 +42,12 @@ class CompanyUnit:
                 company_name = branch_orm.name
                 company_country = branch_orm.country
 
+        if company_name == "":
+            company_name = next(
+                (branch_unit.name for branch_unit in branch_units if branch_unit != ""),
+                "",
+            )
+
         tag_units = []
         tag_units_by_country = []
         for tag_orm in company_orm.company_tag_orm_list:

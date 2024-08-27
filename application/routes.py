@@ -3,89 +3,215 @@ from dataclasses import asdict
 
 from flask import Flask, Response, request
 
-from application.services.short_link_port import (
-    ShortLinkGenerateInput,
-    ShortLinkGenerateKey,
-    ShortLinkRetrieveInput,
-    ShortLinkRetrieveKey,
+from application.services.company_ports import (
+    AutocompleteCompanyNamePort,
+    SearchCompanyByNamePort,
+    SearchCompaniesByTagPort,
+    AddNewCompanyPort,
+    AddCompanyTagPort, DeleteCompanyTagPort,
 )
-from application.services.short_link_usecase import ShortLinkUsecase
+from application.services.company_usecases import CompanyUsecase
 
 app = Flask(__name__)
 
 
-@app.route("/short-links/<string:short_id>", methods=["GET"])
-def get(short_id: str):
+@app.route("/search", methods=["GET"])
+def get_api_for_autocomplete_company_name():
     try:
-        key = ShortLinkRetrieveKey(shortId=short_id)
-        input_port = ShortLinkRetrieveInput()
+        key = AutocompleteCompanyNamePort.Key(
+            country=request.headers.get("x-wanted-language", "ko")
+        )
+        input_port = AutocompleteCompanyNamePort.Input(
+            query=request.args.get("query", "")
+        )
     except (ValueError, TypeError):
         return Response(
-            json.dumps({"error": "client error"}),
-            status=400,
+            json.dumps(
+                {
+                    "message": AutocompleteCompanyNamePort.Status.value[1],
+                    "data": None,
+                }
+            ),
+            status=AutocompleteCompanyNamePort.Status.value[0],
             mimetype="application/json",
         )
     else:
-        output_status, output = ShortLinkUsecase().retrieve(
+        output = CompanyUsecase().autocomplete_company_name(
             key=key, input_port=input_port
         )
-        if output_status.SUCCESS and output:
-            status = 302
-            data = {"data": asdict(output)}
-        elif output_status.VALIDATION_ERROR:
-            status = 400
-            data = {"error": "client error"}
-        elif output_status.NOT_FOUND_ERROR:
-            status = 404
-            data = {"error": "client error"}
-        elif output_status.RUNTIME_ERROR:
-            status = 500
-            data = {"error": "server error"}
-        else:
-            status = 500
-            data = {"error": "server error"}
-
         return Response(
-            json.dumps(data),
-            status=status,
+            json.dumps(
+                {
+                    "message": output.status.value[1],
+                    "data": (
+                        [asdict(data) for data in output.data] if output.data else []
+                    ),
+                }
+            ),
+            status=output.status.value[0],
             mimetype="application/json",
         )
 
 
-@app.route("/short-links", methods=["POST"])
-def post():
+@app.route("/companies/<string:name>", methods=["GET"])
+def get_api_for_search_company_by_name(name: str):
     try:
-        body_param = request.json
-        key = ShortLinkGenerateKey()
-        input_port = ShortLinkGenerateInput(url=body_param.get("url"))
+        key = SearchCompanyByNamePort.Key(
+            country=request.headers.get("x-wanted-language", "ko"), name=name
+        )
+        input_port = SearchCompanyByNamePort.Input()
     except (ValueError, TypeError):
         return Response(
-            json.dumps({"error": "client error"}),
-            status=400,
+            json.dumps(
+                {
+                    "message": SearchCompanyByNamePort.Status.value[1],
+                    "data": None,
+                }
+            ),
+            status=SearchCompanyByNamePort.Status.value[0],
             mimetype="application/json",
         )
     else:
-        output_status, output = ShortLinkUsecase().generate(
-            key=key, input_port=input_port
-        )
-        if output_status.SUCCESS and output:
-            status = 201
-            data = {"data": asdict(output)}
-        elif output_status.VALIDATION_ERROR:
-            status = 400
-            data = {"error": "client error"}
-        elif output_status.CONFLICT_ERROR:
-            status = 409
-            data = {"error": "client error"}
-        elif output_status.RUNTIME_ERROR:
-            status = 500
-            data = {"error": "server error"}
-        else:
-            status = 500
-            data = {"error": "server error"}
-
+        output = CompanyUsecase().search_company_by_name(key=key, input_port=input_port)
         return Response(
-            json.dumps(data),
-            status=status,
+            json.dumps(
+                {
+                    "message": output.status.value[1],
+                    "data": asdict(output.data) if output.data else None,
+                }
+            ),
+            status=output.status.value[0],
             mimetype="application/json",
         )
+
+
+@app.route("/tags", methods=["GET"])
+def get_api_for_search_companies_by_tag():
+    try:
+        key = SearchCompaniesByTagPort.Key(
+            country=request.headers.get("x-wanted-language", "ko")
+        )
+        input_port = SearchCompaniesByTagPort.Input(query=request.args.get("query", ""))
+    except (ValueError, TypeError):
+        return Response(
+            json.dumps(
+                {
+                    "message": SearchCompaniesByTagPort.Status.value[1],
+                    "data": None,
+                }
+            ),
+            status=SearchCompaniesByTagPort.Status.value[0],
+            mimetype="application/json",
+        )
+    else:
+        output = CompanyUsecase().search_companies_by_tag(
+            key=key, input_port=input_port
+        )
+        return Response(
+            json.dumps(
+                {
+                    "message": output.status.value[1],
+                    "data": output.data,
+                }
+            ),
+            status=output.status.value[0],
+            mimetype="application/json",
+        )
+
+
+@app.route("/companies", methods=["POST"])
+def post_api_for_add_new_company():
+    try:
+        key = AddNewCompanyPort.Key(
+            country=request.headers.get("x-wanted-language", "ko")
+        )
+        input_port = AddNewCompanyPort.Input(**request.json)
+    except (ValueError, TypeError):
+        return Response(
+            json.dumps(
+                {
+                    "message": AddNewCompanyPort.Status.value[1],
+                    "data": None,
+                }
+            ),
+            status=AddNewCompanyPort.Status.value[0],
+            mimetype="application/json",
+        )
+    else:
+        output = CompanyUsecase().add_new_company(key=key, input_port=input_port)
+        return Response(
+            json.dumps(
+                {
+                    "message": output.status.value[1],
+                    "data": asdict(output.data) if output.data else None,
+                }
+            ),
+            status=output.status.value[0],
+            mimetype="application/json",
+        )
+
+
+@app.route("/companies/<string:name>/tags", methods=["PUT"])
+def put_api_for_add_company_tag(name: str):
+    try:
+        key = AddCompanyTagPort.Key(
+            country=request.headers.get("x-wanted-language", "ko"), name=name
+        )
+        input_port = AddCompanyTagPort.Input(tags=request.json)
+    except (ValueError, TypeError):
+        return Response(
+            json.dumps(
+                {
+                    "message": AddCompanyTagPort.Status.value[1],
+                    "data": None,
+                }
+            ),
+            status=AddCompanyTagPort.Status.value[0],
+            mimetype="application/json",
+        )
+    else:
+        output = CompanyUsecase().add_company_tag(key=key, input_port=input_port)
+        return Response(
+            json.dumps(
+                {
+                    "message": output.status.value[1],
+                    "data": asdict(output.data) if output.data else None,
+                }
+            ),
+            status=output.status.value[0],
+            mimetype="application/json",
+        )
+
+@app.route("/companies/<string:name>/tags/<string:tag>", methods=["DELETE"])
+def delete_api_for_delete_company_tag(name: str, tag: str):
+    try:
+        key = DeleteCompanyTagPort.Key(
+            country=request.headers.get("x-wanted-language", "ko"),
+            name=name,
+            tag=tag
+        )
+        input_port = DeleteCompanyTagPort.Input()
+    except (ValueError, TypeError):
+        return Response(
+            json.dumps(
+                {
+                    "message": DeleteCompanyTagPort.Status.value[1],
+                    "data": None,
+                }
+            ),
+            status=DeleteCompanyTagPort.Status.value[0],
+            mimetype="application/json",
+        )
+    else:
+        output = CompanyUsecase().delete_company_tag(key=key, input_port=input_port)
+        return Response(
+            json.dumps(
+                {
+                    "message": output.status.value[1],
+                    "data": asdict(output.data) if output.data else None,
+                }
+            ),
+            status=output.status.value[0],
+            mimetype="application/json",
+        )
+

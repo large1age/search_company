@@ -35,13 +35,19 @@ with open(csv_file_path, mode="r", encoding="utf-8") as file:
                 )
             elif header == "tag_ko" and value:
                 for tag in value.split("|"):
-                    CompanyTagORM(name=tag, country="ko")
+                    company_orm.company_tag_orm_list.append(
+                        CompanyTagORM(name=tag, country="ko")
+                    )
             elif header == "tag_en" and value:
                 for tag in value.split("|"):
-                    CompanyTagORM(name=tag, country="en")
+                    company_orm.company_tag_orm_list.append(
+                        CompanyTagORM(name=tag, country="en")
+                    )
             elif header == "tag_ja" and value:
                 for tag in value.split("|"):
-                    CompanyTagORM(name=tag, country="ja")
+                    company_orm.company_tag_orm_list.append(
+                        CompanyTagORM(name=tag, country="ja")
+                    )
 
         session.add(company_orm)
         session.flush()

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import desc
+from sqlalchemy import asc
 
 from application.models.db.company_model import (
     CompanyBranchORM,
@@ -40,7 +40,7 @@ class CompanyQuery:
             .filter(
                 CompanyBranchORM.name.like(f"%{name}%")
             )  # SQLite3에서는 동일 테이블의 FTS 연산 지원이 되지 않아서 부득이하게 like 연산을 함 (풀스캔 이슈 인지)
-            .order_by(desc(CompanyORM.id))
+            .order_by(asc(self.base_orm_type.id))
             .distinct()
         )
         return query.all()
@@ -50,7 +50,7 @@ class CompanyQuery:
             self.session.query(self.base_orm_type)
             .join(CompanyTagORM, self.base_orm_type.id == CompanyTagORM.company_id)
             .filter(CompanyTagORM.name == name)
-            .order_by(desc(CompanyORM.id))
+            .order_by(asc(self.base_orm_type.id))
             .distinct()
         )
         return query.all()

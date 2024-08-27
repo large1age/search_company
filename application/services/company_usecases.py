@@ -39,6 +39,7 @@ class CompanyUsecase:
                 status=AutocompleteCompanyNamePort.Status.SUCCESS,
                 data=output_items,
             )
+
         except Exception as e:
             return AutocompleteCompanyNamePort.Output(
                 status=AutocompleteCompanyNamePort.Status.SERVER_ERROR,
@@ -107,7 +108,7 @@ class CompanyUsecase:
             for tag_dict in input_port.tags:
                 tag_unit_list += [
                     TagUnit(country=country, name=name)
-                    for country, name in tag_dict.items()
+                    for country, name in tag_dict["tag_name"].items()
                 ]
 
             self.command_service.register_company(
@@ -154,21 +155,24 @@ class CompanyUsecase:
             for tag_dict in input_port.tags:
                 tag_unit_list += [
                     TagUnit(country=country, name=name)
-                    for country, name in tag_dict.items()
+                    for country, name in tag_dict["tag_name"].items()
                 ]
+
             self.command_service.add_company_tag(
                 company_unit=company_unit, tag_unit_list=tag_unit_list
             )
 
-            tags = []
-            for tag_unit in tag_unit_list:
-                if tag_unit.country == key.country:
-                    tags.append(tag_unit.name)
+            tags = [
+                tag_unit.name
+                for tag_unit in tag_unit_list
+                if tag_unit.country == key.country
+            ] + [tag_unit.name for tag_unit in company_unit.tag_units_by_country]
+            sorted_tags = sorted(tags, key=lambda x: int(x.split("_")[1]))
 
             return AddCompanyTagPort.Output(
                 status=AddCompanyTagPort.Status.SUCCESS,
                 data=AddCompanyTagPort.OutputItem(
-                    company_name=company_unit.name, tags=tags
+                    company_name=company_unit.name, tags=sorted_tags
                 ),
             )
         except Exception as e:
@@ -206,10 +210,12 @@ class CompanyUsecase:
                 for tag_unit in company_unit.tag_units
                 if tag_unit.name != key.tag and tag_unit.country == key.country
             ]
+            sorted_tags = sorted(tags, key=lambda x: int(x.split("_")[1]))
+
             return DeleteCompanyTagPort.Output(
                 status=DeleteCompanyTagPort.Status.SUCCESS,
                 data=DeleteCompanyTagPort.OutputItem(
-                    company_name=company_unit.name, tags=tags
+                    company_name=company_unit.name, tags=sorted_tags
                 ),
             )
         except Exception as e:

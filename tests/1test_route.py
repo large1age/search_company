@@ -1,4 +1,5 @@
 import json
+import unittest
 
 from application.routes import app
 from application.services.short_link_port import (
@@ -9,7 +10,7 @@ from application.services.short_link_usecase import ShortLinkUsecase
 from tests.test_usecase import BaseTestUsecase
 
 
-class TestShortLinkAPI(BaseTestUsecase):
+class TestShortLinkAPI(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
