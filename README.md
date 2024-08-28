@@ -29,3 +29,147 @@ Updated: 2024-08-28
     - python unit_test.py
 * 서버 실행 (CSV 데이터의 마이그레이션 포함)
     - python bootstrap.py
+
+## API 명세
+* 회사명 자동완성
+  - Summary : 회사 이름의 일부(2자 이상)을 입력 시 입력 내용이 포함된 회사 이름의 리스트가 출력됩니다. 정렬은 회사 등록 오름차순으로 출력됩니다.
+  - GET /search
+  - Headers
+    - x-wanted-language: str (default "ko")
+  - Request
+    - Query Param
+      - query: str - required
+  - Response
+    ```
+    {
+      "message": str,
+      "data": list[str]
+    }
+    ```
+  - Status
+    - 200 OK
+    - 400 INVALID REQUEST ERROR
+    - 500 INTERNAL SERVER ERROR
+* 회사 이름으로 회사 검색
+  - Summary : 입력한 회사 이름으로 회사 정보를 출력합니다.
+  - GET /companies/<company_name>
+  - Headers
+    - x-wanted-language: str (default "ko")
+  - Request
+    - Path Param
+      - company_name: str - required
+  - Response
+    ```
+    {
+      "message": str,
+      "data": {
+        "company_name": str,
+        "tags": list[str]
+      }
+    }
+    ```
+  - Status
+    - 200 OK
+    - 400 INVALID REQUEST ERROR
+    - 404 NOT FOUND ERROR
+    - 500 INTERNAL SERVER ERROR
+* 태그명으로 회사 검색
+  - Summary: 회사에 연결된 태그 이름으로 회사 정보 리스트를 출력합니다. 정렬 순서는 회사 등록 오름차순입니다.
+  - GET /tags
+  - Headers
+    - x-wanted-language: str (default "ko")
+  - Request
+    - Query Param
+      - query: str - required
+  - Response
+    ```
+    {
+      "message": str,
+      "data": list[str]
+    }
+    ```
+  - Status
+    - 200 OK
+    - 400 INVALID REQUEST ERROR
+    - 500 INTERNAL SERVER ERROR
+* 새로운 회사 추가
+  - Summary: 새로운 회사를 추가합니다.
+  - POST /companies
+  - Headers
+    - x-wanted-language: str (default "ko")
+  - Request
+    - Body Param
+      ```
+      {
+        "company_name": dict[str, str],
+        "tags": list[dict[str, dict[str, str]]]
+      }
+      ```
+  - Response
+    ```
+    {
+      "message": str,
+      "data": {
+        "company_name": str,
+        "tags": list[str]
+      }
+    }
+    ```
+  - Status
+    - 200 OK
+    - 400 INVALID REQUEST ERROR
+    - 404 NOT FOUND ERROR
+    - 500 INTERNAL SERVER ERROR
+* 회사 태그 정보 추가
+  - Summary: 회사에 새로운 태그 정보를 추가합니다.
+  - PUT /companies/<company_name>/tags
+  - Headers
+    - x-wanted-language: str (default "ko")
+  - Request
+    - Path Param
+      - company_name: str - required
+    - Body Param
+      ```
+      [
+        dict[str, dict[str, str]]
+      ]
+      ```
+  - Response
+    ```
+    {
+      "message": str,
+      "data": {
+        "company_name": str,
+        "tags": list[str]
+      }
+    }
+    ```
+  - Status
+    - 200 OK
+    - 400 INVALID REQUEST ERROR
+    - 404 NOT FOUND ERROR
+    - 500 INTERNAL SERVER ERROR
+* 회사 태그 정보 삭제
+  - Summary: 회사의 기존 태그 정보를 삭제합니다.
+  - DELETE /companies/<company_name>/tags/<tag_name>
+  - Headers
+    - x-wanted-language: str (default "ko")
+  - Request
+    - Path Param
+      - company_name: str - required
+      - tag_name: str - required
+  - Response
+    ```
+    {
+      "message": str,
+      "data": {
+        "company_name": str,
+        "tags": list[str]
+      }
+    }
+    ```
+  - Status
+    - 200 OK
+    - 400 INVALID REQUEST ERROR
+    - 404 NOT FOUND ERROR
+    - 500 INTERNAL SERVER ERROR
